@@ -1,1 +1,45 @@
-<p>register works!</p>
+<!-- component -->
+<div class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+    <div class="flex justify-center mb-6">
+            <span class="inline-block bg-gray-200 rounded-full p-3">
+                <svg height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path
+                  d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"
+                  fill="currentColor"/></svg>
+            </span>
+    </div>
+    <h2 class="text-2xl font-semibold text-center mb-4">Create a new account</h2>
+    <p class="text-gray-600 text-center mb-6">Enter your details to register.</p>
+    <form>
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-semibold mb-2" for="fullName">Full Name *</label>
+        <input class="form-input w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-blue-500" id="fullName"
+               placeholder="Rishi Pandey" required
+               type="text">
+      </div>
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-semibold mb-2" for="email">Email Address *</label>
+        <input class="form-input w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-blue-500" id="email"
+               placeholder="rishipandey99@gmail.com" required
+               type="email">
+      </div>
+      <div class="mb-6">
+        <label class="block text-gray-700 text-sm font-semibold mb-2" for="password">Password *</label>
+        <input class="form-input w-full px-4 py-2 border rounded-lg text-gray-700 focus:ring-blue-500" id="password"
+               placeholder="••••••••" required
+               type="password">
+        <p class="text-gray-600 text-xs mt-1">Must contain 1 uppercase, 1 number, 1 special character & min of 8
+          characters.</p>
+      </div>
+      <button class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              type="submit">
+        Register
+      </button>
+      <p class="text-gray-600 text-xs text-center mt-4">
+        By clicking Register, you agree to accept AddressBookApp's
+        <a class="text-blue-500 hover:underline" href="#">Terms and Conditions</a>.
+      </p>
+    </form>
+  </div>
+</div>
+
