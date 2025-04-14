@@ -1,0 +1,15 @@
+<div>
+  <div *ngIf="userData; else loadingOrError">
+    <p>Email: {{userData.email}}</p>
+    <p>User Id:{{userData._id}}</p>
+    <button (click)="onLogout()">Logout</button>
+  </div>
+  <ng-template #loadingOrError>
+    <p *ngIf="errorMessage">{{errorMessage}</p>
+    <p *ngIf="!errorMessage">Loading Profile...</p>
+  </ng-template>
+
+</div>
+
+
+
