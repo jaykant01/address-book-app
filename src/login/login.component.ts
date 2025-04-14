@@ -2,14 +2,13 @@ import { Component } from '@angular/core';
 import {AuthService} from '../services/auth.service';
 import {Router, RouterLink} from '@angular/router';
 import {FormsModule} from '@angular/forms';
-import {NgOptimizedImage} from '@angular/common';
+
 
 @Component({
   selector: 'app-login',
   imports: [
     FormsModule,
-    RouterLink,
-    NgOptimizedImage
+    RouterLink
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
