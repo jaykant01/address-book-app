@@ -78,7 +78,9 @@
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-4 mb-4 sm:mb-6">
-      <button class="flex flex-col items-center justify-center p-2 sm:p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
+      <button
+        (click)="showAddContactForm()"
+        class="flex flex-col items-center justify-center p-2 sm:p-4 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
         <div class="w-6 h-6 sm:w-8 sm:h-8 mb-1 sm:mb-2 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -150,7 +152,9 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </button>
-                  <button class="p-1 rounded-full hover:bg-gray-100 transition-colors">
+                  <button
+                    (click)="deleteContact(contact)"
+                    class="p-1 rounded-full hover:bg-gray-100 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                          class="feather feather-trash-2">
@@ -208,7 +212,7 @@
             </svg>
             <div>
               <div class="font-medium text-gray-700">City, State</div>
-              <div class="text-gray-600">{{contact.city}}, {{contact.state}}</div>
+              <div class="text-gray-600">{{contact.city || ''}}, {{contact.state || ''}}</div>
             </div>
           </div>
 
@@ -218,7 +222,7 @@
             </svg>
             <div>
               <div class="font-medium text-gray-700">Country</div>
-              <div class="text-gray-600">{{contact.country}}</div>
+              <div class="text-gray-600">{{contact.country || 'Not specified'}}</div>
             </div>
           </div>
 
@@ -228,7 +232,7 @@
             </svg>
             <div>
               <div class="font-medium text-gray-700">Pincode</div>
-              <div class="text-gray-600">{{contact.pincode}}</div>
+              <div class="text-gray-600">{{contact.pincode || 'Not specified'}}</div>
             </div>
           </div>
 
@@ -420,6 +424,154 @@
             type="submit"
             class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
             Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div *ngIf="isAddingContact" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="p-4 sm:p-6 border-b">
+      <h2 class="text-xl font-semibold">Add New Contact</h2>
+    </div>
+
+    <div class="p-4 sm:p-6">
+      <form (submit)="addContact()">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.firstName"
+              name="firstName"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Middle Name</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.middleName"
+              name="middleName"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.lastName"
+              name="lastName"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input
+              type="email"
+              [(ngModel)]="newContact.email"
+              name="email"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.phone"
+              name="phone"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <input
+              type="date"
+              [(ngModel)]="newContact.dob"
+              name="dob"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              [(ngModel)]="newContact.category"
+              name="category"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option [ngValue]="undefined">Select a category</option>
+              <option value="Family">Family</option>
+              <option value="Friends">Friends</option>
+              <option value="Office">Office</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+          <textarea
+            [(ngModel)]="newContact.address"
+            name="address"
+            rows="2"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.country"
+              name="country"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.state"
+              name="state"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.city"
+              name="city"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+            <input
+              type="text"
+              [(ngModel)]="newContact.pincode"
+              name="pincode"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-4 border-t">
+          <button
+            type="button"
+            (click)="cancelAddContact()"
+            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">
+            Add Contact
           </button>
         </div>
       </form>

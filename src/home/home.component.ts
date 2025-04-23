@@ -3,30 +3,12 @@ import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { environment } from "../environments/environment"
 import type { Subscription } from "rxjs"
+
 import {AuthService} from '../services/auth.service';
 import {HttpClient} from '@angular/common/http';
+import {Contact, ContactService} from '../services/contact.service';
 
 type Category = "Family" | "Friends" | "Office" | "Other"
-
-interface Contact {
-  id: number
-  firstName: string
-  lastName: string
-  middleName?: string
-  email: string
-  phone: string
-  dob?: string
-  address?: string
-  country?: string
-  state?: string
-  city?: string
-  pincode?: string
-  category?: Category
-  isFavorite: boolean
-  avatar?: string
-  expanded?: boolean
-  isEditing?: boolean
-}
 
 @Component({
   selector: "app-home",
@@ -36,13 +18,12 @@ interface Contact {
   styleUrls: ["./home.component.scss"],
 })
 export class HomeComponent implements OnInit, OnDestroy {
-
-
   // User profile data
   userData: any = null
   errorMessage = ""
   isProfileMenuOpen = false
   private subscription: Subscription | null = null
+  private contactsSubscription: Subscription | null = null
 
   // Sub-tabs for filtering contacts
   contactsTab: "All Contacts" | "Favorites" | "Recent" | "Groups" = "All Contacts"
@@ -53,98 +34,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Contact being edited
   editingContact: Contact | null = null
 
-  // Contact list (mock data)
-  contacts: Contact[] = [
-    {
-      id: 1,
-      firstName: "Alex",
-      lastName: "Johnson",
-      middleName: "",
-      email: "alex.johnson@example.com",
-      phone: "+1 (555) 123-4567",
-      dob: "1985-06-15",
-      address: "123 Main St",
-      country: "United States",
-      state: "California",
-      city: "San Francisco",
-      pincode: "94105",
-      category: "Friends",
-      isFavorite: false,
-      expanded: false,
-    },
-    {
-      id: 2,
-      firstName: "Samantha",
-      lastName: "Williams",
-      middleName: "Rose",
-      email: "samantha.w@example.com",
-      phone: "+1 (555) 987-6543",
-      dob: "1990-03-22",
-      address: "456 Oak Avenue",
-      country: "United States",
-      state: "New York",
-      city: "Brooklyn",
-      pincode: "11201",
-      category: "Family",
-      isFavorite: false,
-      expanded: false,
-    },
-    {
-      id: 3,
-      firstName: "Michael",
-      lastName: "Brown",
-      middleName: "",
-      email: "michael.brown@example.com",
-      phone: "+1 (555) 456-7890",
-      dob: "1982-11-08",
-      address: "789 Pine Road",
-      country: "United States",
-      state: "Texas",
-      city: "Austin",
-      pincode: "73301",
-      category: "Office",
-      isFavorite: true,
-      expanded: false,
-    },
-    {
-      id: 4,
-      firstName: "Emily",
-      lastName: "Davis",
-      middleName: "Jane",
-      email: "emily.davis@example.com",
-      phone: "+1 (555) 234-5678",
-      dob: "1988-07-30",
-      address: "321 Maple Drive",
-      country: "United States",
-      state: "Illinois",
-      city: "Chicago",
-      pincode: "60601",
-      category: "Friends",
-      isFavorite: false,
-      expanded: false,
-    },
-    {
-      id: 5,
-      firstName: "David",
-      lastName: "Wilson",
-      middleName: "Thomas",
-      email: "david.wilson@example.com",
-      phone: "+1 (555) 876-5432",
-      dob: "1979-02-14",
-      address: "654 Cedar Lane",
-      country: "United States",
-      state: "Washington",
-      city: "Seattle",
-      pincode: "98101",
-      category: "Office",
-      isFavorite: false,
-      expanded: false,
-    },
-  ]
+  // Contact list
+  contacts: Contact[] = []
 
+  // New contact form
+  isAddingContact = false
+  newContact: Contact = this.getEmptyContact()
 
-
-  constructor(private authService: AuthService,private  http: HttpClient) {}
+  constructor(
+    private authService: AuthService,
+    private http: HttpClient,
+    private contactService: ContactService,
+  ) {}
 
   ngOnInit() {
     this.subscription = this.http.get(environment.apiUrl + "/home").subscribe({
@@ -157,11 +58,32 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.errorMessage = "Could not load profile data"
       },
     })
+
+    // Load contacts from the API
+    this.loadContacts()
+  }
+
+  loadContacts() {
+    this.contactsSubscription = this.contactService.getContacts().subscribe({
+      next: (contacts) => {
+        this.contacts = contacts.map((contact) => ({
+          ...contact,
+          expanded: false,
+        }))
+      },
+      error: (err) => {
+        console.error("Error loading contacts", err)
+        this.errorMessage = "Could not load contacts"
+      },
+    })
   }
 
   ngOnDestroy() {
     if (this.subscription) {
       this.subscription.unsubscribe()
+    }
+    if (this.contactsSubscription) {
+      this.contactsSubscription.unsubscribe()
     }
   }
 
@@ -190,7 +112,19 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Toggle favorite status
   toggleFavorite(contact: Contact): void {
-    contact.isFavorite = !contact.isFavorite
+    if (contact._id) {
+      this.contactService.toggleFavorite(contact._id).subscribe({
+        next: (updatedContact) => {
+          const index = this.contacts.findIndex((c) => c._id === contact._id)
+          if (index !== -1) {
+            this.contacts[index].isFavorite = updatedContact.isFavorite
+          }
+        },
+        error: (err) => {
+          console.error("Error toggling favorite", err)
+        },
+      })
+    }
   }
 
   // Toggle expanded state
@@ -205,18 +139,75 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Save edited contact
   saveContact(): void {
-    if (this.editingContact) {
-      const index = this.contacts.findIndex((c) => c.id === this.editingContact!.id)
-      if (index !== -1) {
-        this.contacts[index] = { ...this.editingContact }
-      }
-      this.editingContact = null
+    if (this.editingContact && this.editingContact._id) {
+      this.contactService.updateContact(this.editingContact._id, this.editingContact).subscribe({
+        next: (updatedContact) => {
+          const index = this.contacts.findIndex((c) => c._id === updatedContact._id)
+          if (index !== -1) {
+            this.contacts[index] = { ...updatedContact, expanded: this.contacts[index].expanded }
+          }
+          this.editingContact = null
+        },
+        error: (err) => {
+          console.error("Error updating contact", err)
+        },
+      })
     }
   }
 
   // Cancel editing
   cancelEdit(): void {
     this.editingContact = null
+  }
+
+  // Delete a contact
+  deleteContact(contact: Contact): void {
+    if (contact._id && confirm("Are you sure you want to delete this contact?")) {
+      this.contactService.deleteContact(contact._id).subscribe({
+        next: () => {
+          this.contacts = this.contacts.filter((c) => c._id !== contact._id)
+        },
+        error: (err) => {
+          console.error("Error deleting contact", err)
+        },
+      })
+    }
+  }
+
+  // Show add contact form
+  showAddContactForm(): void {
+    this.isAddingContact = true
+    this.newContact = this.getEmptyContact()
+  }
+
+  // Cancel adding contact
+  cancelAddContact(): void {
+    this.isAddingContact = false
+  }
+
+  // Add new contact
+  addContact(): void {
+    this.contactService.createContact(this.newContact).subscribe({
+      next: (contact) => {
+        this.contacts.push({ ...contact, expanded: false })
+        this.isAddingContact = false
+      },
+      error: (err) => {
+        console.error("Error adding contact", err)
+      },
+    })
+  }
+
+  // Get empty contact object for new contact form
+  getEmptyContact(): Contact {
+    return {
+      firstName: "",
+      lastName: "",
+      middleName: "",
+      email: "",
+      phone: "",
+      isFavorite: false,
+    }
   }
 
   // Get category color class
@@ -241,8 +232,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.contactsTab === "Favorites") {
       filtered = filtered.filter((c) => c.isFavorite)
     } else if (this.contactsTab === "Recent") {
-      // Simulating recent with first 2
-      filtered = filtered.slice(0, 2)
+      // Get the 5 most recent contacts (assuming they're sorted by creation date)
+      filtered = filtered.slice(0, 5)
     } else if (this.contactsTab === "Groups") {
       // Group view would be implemented here
       filtered = filtered.filter((c) => c.category !== undefined)
@@ -262,3 +253,4 @@ export class HomeComponent implements OnInit, OnDestroy {
     return filtered
   }
 }
+
